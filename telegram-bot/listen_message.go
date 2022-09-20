@@ -30,6 +30,18 @@ func (b *TeleBot) ListenMessage(ctx context.Context) error {
 
 		message := update.Message
 
+		if b.cfg.UsingBlackList {
+			if _, ok := b.blackListMap[message.Chat.ID]; ok {
+				continue
+			}
+		}
+
+		if b.cfg.OnlyAllowWhiteList {
+			if _, ok := b.whiteListMap[message.Chat.ID]; !ok {
+				continue
+			}
+		}
+
 		if !message.IsCommand() && !b.cfg.AllowProcessNormalMessage {
 			continue
 		}
