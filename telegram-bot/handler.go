@@ -6,7 +6,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-type Handler func(message *tgbotapi.Message)
+type Handler func(ctx *Ctx, message *tgbotapi.Message)
 
 func (b *TeleBot) RegisterHandler(command string, handler Handler) error {
 	if b.handlers == nil {

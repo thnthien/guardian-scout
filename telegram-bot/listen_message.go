@@ -9,7 +9,7 @@ import (
 	"github.com/thnthien/great-deku/l"
 )
 
-func (b *TeleBot) ListenMessage(ctx context.Context) error {
+func (b *TeleBot) ListenMessage() error {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = b.cfg.TimeOut
 	if u.Timeout == 0 {
@@ -23,6 +23,7 @@ func (b *TeleBot) ListenMessage(ctx context.Context) error {
 	b.ll.Info("started bot", l.Object("bot_info", bot))
 	updates := b.GetUpdatesChan(u)
 
+	ctx := context.Background()
 	for update := range updates {
 		if update.Message == nil {
 			continue
@@ -63,12 +64,12 @@ func (b *TeleBot) ListenMessage(ctx context.Context) error {
 
 		handler, ok := b.handlers[command]
 		if ok {
-			handler(message)
+			handler(NewContext(ctx, message), message)
 			continue
 		}
 
 		if b.cfg.AllowProcessNormalMessage {
-			b.defaultHandler(message)
+			b.defaultHandler(NewContext(ctx, message), message)
 		}
 	}
 
