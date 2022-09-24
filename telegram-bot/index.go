@@ -45,6 +45,7 @@ type TeleBot struct {
 	whiteListMap map[int64]any
 	blackListMap map[int64]any
 
+	middlewares    []Handler
 	handlers       map[string][]Handler
 	defaultHandler []Handler
 	errorHandler   ErrorHandler
@@ -108,4 +109,11 @@ func initBot(bot *tgbotapi.BotAPI, ll l.Logger, cfg Config) *TeleBot {
 
 func (b *TeleBot) SetLogger(logger *zap.Logger) {
 	b.ll = l.Logger{Logger: logger}
+}
+
+func (b *TeleBot) Use(h Handler) {
+	if b.middlewares == nil {
+		b.middlewares = make([]Handler, 0)
+	}
+	b.middlewares = append([]Handler{h}, b.middlewares...)
 }
