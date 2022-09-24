@@ -125,8 +125,9 @@ func (c *Ctx) Next() error {
 	return handler(c)
 }
 
-func (c *Ctx) IsReply(isReply bool) {
+func (c *Ctx) IsReply(isReply bool) *Ctx {
 	c.isReply = isReply
+	return c
 }
 
 func (c *Ctx) Text(txt string) error {
