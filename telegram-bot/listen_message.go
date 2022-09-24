@@ -47,8 +47,6 @@ func (b *TeleBot) ListenMessage() error {
 			continue
 		}
 
-		b.ll.Debug("received message", l.Object("message", message))
-
 		command := ""
 		if message.IsCommand() {
 			command = message.Command()
@@ -62,16 +60,24 @@ func (b *TeleBot) ListenMessage() error {
 			}
 		}
 
-		handler, ok := b.handlers[command]
-		if ok {
-			handler(NewContext(ctx, message), message)
-			continue
+		handlers, ok := b.handlers[command]
+		if !ok {
+			if !b.cfg.AllowProcessNormalMessage {
+				continue
+			}
+			handlers = b.defaultHandler
 		}
 
-		if b.cfg.AllowProcessNormalMessage {
-			b.defaultHandler(NewContext(ctx, message), message)
-		}
+		b.rpooling.Submit(b.processMessage(newContext(ctx, b.ll, b, &bot, message, handlers)))
 	}
 
 	return nil
+}
+
+func (b *TeleBot) processMessage(c *Ctx) func() {
+	return func() {
+		if err := c.Next(); err != nil && b.errorHandler != nil {
+			b.errorHandler(c, err)
+		}
+	}
 }

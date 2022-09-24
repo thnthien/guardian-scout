@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/thnthien/great-deku/l"
+	"github.com/thnthien/great-deku/rpooling"
 	"go.uber.org/zap"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -17,8 +18,10 @@ type Config struct {
 	AllowProcessNormalMessage bool    `json:"allow_process_normal_message"`
 	OnlyAllowWhiteList        bool    `json:"only_allow_white_list"`
 	UsingBlackList            bool    `json:"using_black_list"`
+	MaxThreadNumber           int     `json:"max_thread_number"`
 	WhiteListChatIDs          []int64 `json:"white_list_chat_ids"`
 	BlackListChatIDs          []int64 `json:"black_list_chat_ids"`
+	ErrorHandler              ErrorHandler
 }
 
 var DefaultConfig = Config{
@@ -34,14 +37,17 @@ var DefaultConfig = Config{
 
 type TeleBot struct {
 	*tgbotapi.BotAPI
-	ll  l.Logger
-	cfg Config
+
+	ll       l.Logger
+	cfg      Config
+	rpooling rpooling.IPool
 
 	whiteListMap map[int64]any
 	blackListMap map[int64]any
 
-	handlers       map[string]Handler
-	defaultHandler Handler
+	handlers       map[string][]Handler
+	defaultHandler []Handler
+	errorHandler   ErrorHandler
 }
 
 func New(apiKey string, cfgs ...Config) *TeleBot {
@@ -87,6 +93,15 @@ func initBot(bot *tgbotapi.BotAPI, ll l.Logger, cfg Config) *TeleBot {
 			teleBot.blackListMap[chatID] = nil
 		}
 	}
+	if cfg.MaxThreadNumber == 0 {
+		cfg.MaxThreadNumber = 1000
+	}
+	teleBot.rpooling = rpooling.New(cfg.MaxThreadNumber, ll)
+
+	if cfg.ErrorHandler == nil {
+		cfg.ErrorHandler = NewDefaultErrorHandler()
+	}
+	teleBot.errorHandler = cfg.ErrorHandler
 
 	return teleBot
 }

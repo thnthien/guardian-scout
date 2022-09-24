@@ -13,7 +13,7 @@ func (b *TeleBot) SendTextMessage(chatID int64, text string, replyMessageID ...i
 			length = len(text)
 		}
 		message := tgbotapi.NewMessage(chatID, text[i:length])
-		message.ParseMode = "HTML"
+		message.ParseMode = "Markdown"
 		if len(replyMessageID) > 0 {
 			message.ReplyToMessageID = replyMessageID[0]
 		}
