@@ -27,6 +27,8 @@ type Ctx struct {
 
 	handlers     []Handler
 	handlerIndex int
+
+	isReply bool
 }
 
 func newContext(
@@ -121,4 +123,17 @@ func (c *Ctx) Next() error {
 	handler := c.handlers[c.handlerIndex]
 	c.handlerIndex++
 	return handler(c)
+}
+
+func (c *Ctx) IsReply(isReply bool) {
+	c.isReply = isReply
+}
+
+func (c *Ctx) Text(txt string) error {
+	if c.isReply {
+		_, err := c.bot.SendTextMessage(c.channelID, txt, c.messageID)
+		return err
+	}
+	_, err := c.bot.SendTextMessage(c.channelID, txt)
+	return err
 }
