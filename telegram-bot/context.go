@@ -113,6 +113,10 @@ func (c *Ctx) GetRequestID() string {
 	return c.requestID
 }
 
+func (c *Ctx) GetParams() []string {
+	return c.params
+}
+
 func (c *Ctx) Next() error {
 	handler := c.handlers[c.handlerIndex]
 	c.handlerIndex++
