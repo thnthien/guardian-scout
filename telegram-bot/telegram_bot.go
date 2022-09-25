@@ -231,7 +231,7 @@ func (b *TeleBot) ListenMessage() error {
 		}
 
 		if len(b.middlewares) > 0 {
-			handlers = append(handlers, b.middlewares...)
+			handlers = append(b.middlewares, handlers...)
 		}
 
 		b.rpooling.Submit(b.processMessage(newContext(ctx, b.ll, b, &bot, message, handlers)))
