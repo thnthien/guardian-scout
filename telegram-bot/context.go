@@ -125,6 +125,7 @@ func (c *Ctx) Next() error {
 	return handler(c)
 }
 
+// IsReply set this to true if wanting to reply the requesting message
 func (c *Ctx) IsReply(isReply bool) *Ctx {
 	c.isReply = isReply
 	return c
